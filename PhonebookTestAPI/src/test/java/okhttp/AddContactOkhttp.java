@@ -2,10 +2,10 @@ package okhttp;
 
 import com.google.gson.Gson;
 import dto.ContactDTO;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import dto.ContactResponsDTO;
+import dto.ErrorDTO;
+import okhttp3.*;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -29,7 +29,57 @@ public class AddContactOkhttp {
                 .addHeader("Authorization", token)
                 .post(body).build();
 
-        client.newCall(request).execute();
+        Response response = client.newCall(request).execute();
+        Assert.assertTrue(response.isSuccessful());
+
+        ContactResponsDTO contactResponsDTO= gson.fromJson(response.body().string(), ContactResponsDTO.class);
+        System.out.println(contactResponsDTO);
+
+    }
+
+    @Test
+    public void addContactSuccessNegativTest() throws IOException {
+
+        ContactDTO contactDto = ContactDTO.builder().name("wer").lastName("Kan")
+                .email("kan@gmail.com").phone("1234512345")
+                .address("Berlin").description("goalkeeper").build();
+
+        RequestBody body = RequestBody.create(gson.toJson(contactDto),JSON);
+        Request request = new Request.Builder()
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts")
+                .addHeader("Authorization", token)
+                .post(body).build();
+
+        Response response = client.newCall(request).execute();
+        Assert.assertTrue(response.isSuccessful());
+
+        ErrorDTO errorDTO = gson.fromJson(response.body().string(), ErrorDTO.class);
+        System.out.println(errorDTO.getMessage());
+
+        Assert.assertEquals(errorDTO.getError(), "Emty Name");
+
+    }
+
+    @Test
+    public void addContactSuccessNegEmailTest() throws IOException {
+
+        ContactDTO contactDto = ContactDTO.builder().name("wer").lastName("Kan")
+                .email("kangmail.com").phone("1234512345")
+                .address("Berlin").description("goalkeeper").build();
+
+        RequestBody body = RequestBody.create(gson.toJson(contactDto),JSON);
+        Request request = new Request.Builder()
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts")
+                .addHeader("Authorization", token)
+                .post(body).build();
+
+        Response response = client.newCall(request).execute();
+        Assert.assertTrue(response.isSuccessful());
+
+        ErrorDTO errorDTO = gson.fromJson(response.body().string(), ErrorDTO.class);
+        System.out.println(errorDTO.getMessage());
+
+        Assert.assertEquals(errorDTO.getError(), "Emty Name");
 
     }
 }
